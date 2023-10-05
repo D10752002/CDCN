@@ -1,0 +1,5 @@
+loaded as /home/dinesh/Documents/Projects/BTP weights/CDCN/output/CDCNpp_OULU-NPU_4.pth
+APCER:  0.019910298864065056
+BPCER:  3.052396641513445
+ACER:  1.536153470188755
+Test accuracy:  0.993805473372781
