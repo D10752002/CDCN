@@ -287,7 +287,7 @@ class CDCNpp(nn.Module):
         
         map_x = map_x.squeeze(1)
         
-        return map_x, x_concat, attention1, attention2, attention3, x_input
+        return map_x
 		
 
 

@@ -26,7 +26,7 @@ def main():
 
     dump_input = torch.randn((1, 3, cfg['model']['input_size'][0], cfg['model']['input_size'][1]))
     
-    writer.add_graph(network, dump_input)
+
     
     train_transform = transforms.Compose([
         RandomGammaCorrection(max_gamma=cfg['dataset']['augmentation']['gamma_correction'][1],
@@ -44,8 +44,14 @@ def main():
         transforms.ToTensor(),
         transforms.Normalize(cfg['dataset']['mean'], cfg['dataset']['sigma'])
     ])
-    
+
     val_transform = transforms.Compose([
+        transforms.Resize(cfg['model']['input_size']),
+        transforms.ToTensor(),
+        transforms.Normalize(cfg['dataset']['mean'], cfg['dataset']['sigma'])
+    ])
+
+    test_transform = transforms.Compose([
         transforms.Resize(cfg['model']['input_size']),
         transforms.ToTensor(),
         transforms.Normalize(cfg['dataset']['mean'], cfg['dataset']['sigma'])
@@ -66,6 +72,14 @@ def main():
         transform=val_transform,
         smoothing=cfg['train']['smoothing']
     )
+
+    testset = FASDataset(
+        root_dir=cfg['dataset']['root'],
+        csv_file=cfg['dataset']['test_set'],
+        depth_map_size=cfg['model']['depth_map_size'],
+        transform=test_transform,
+        smoothing=cfg['train']['smoothing']
+    )
     
     trainloader = torch.utils.data.DataLoader(
         dataset=trainset,
@@ -73,10 +87,17 @@ def main():
         shuffle=True,
         num_workers=8
     )
-    
+
     valloader = torch.utils.data.DataLoader(
         dataset=valset,
         batch_size=cfg['val']['batch_size'],
+        shuffle=True,
+        num_workers=8
+    )
+    
+    testloader = torch.utils.data.DataLoader(
+        dataset=testset,
+        batch_size=cfg['test']['batch_size'],
         shuffle=True,
         num_workers=8
     )
@@ -90,10 +111,29 @@ def main():
         device=device,
         trainloader=trainloader,
         valloader=valloader,
+        testloader=testloader,
         writer=writer
     )
+
+    trainer.train(0)
     
-    trainer.train()
+    # trainer.load_model(7)
+    # best_val_acc_so_far = 0.9850965090506095  # Fill in the best validation accuracy achieved in previous training
+    # trainer.best_val_acc = best_val_acc_so_far
+    # trainer.train(5)
+
+    # # Calculate test metrics
+    # APCER, BPCER, ACER = trainer.calculate_metrics()
+
+    # # Print the metrics
+    # print("APCER: ", APCER)
+    # print("BPCER: ", BPCER)
+    # print("ACER: ", ACER)
+
+    # test_accuracy= trainer.test_accuracy()
+    # print("Test accuracy: ", test_accuracy)
+
+
 
     
     writer.close()
